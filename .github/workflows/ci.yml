@@ -7,10 +7,35 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+env:
+  FLUTTER_VERSION: '3.44.0'
+  APP_VERSION: '1.0.0'
+
 jobs:
-  build-android:
-    name: Build Android APK
+  test:
+    name: Run Tests
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Run analyze
+        run: flutter analyze --no-fatal-infos
+
+  build-android:
+    name: Build Android APK + AppBundle
+    runs-on: ubuntu-latest
+    needs: test
     steps:
       - uses: actions/checkout@v4
 
@@ -21,70 +46,140 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44.0'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Analyze
-        run: flutter analyze --no-fatal-infos
-
-      - name: Build APK
+      - name: Build Release APK
         run: flutter build apk --release
 
-      - name: Build AppBundle
+      - name: Build Release AppBundle
         run: flutter build appbundle --release
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Verify APK file
+        run: |
+          echo "=== APK file info ==="
+          ls -lh build/app/outputs/flutter-apk/
+          file build/app/outputs/flutter-apk/app-release.apk
+          echo "APK size: $(wc -c < build/app/outputs/flutter-apk/app-release.apk) bytes"
 
-      - name: Upload AppBundle
+      - name: Verify AppBundle file
+        run: |
+          echo "=== AppBundle file info ==="
+          ls -lh build/app/outputs/bundle/release/
+          file build/app/outputs/bundle/release/app-release.aab
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: android-aab
+          name: sleep-talk-android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 90
+
+      - name: Upload AppBundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sleep-talk-android-aab
           path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 90
 
   build-ios:
-    name: Build iOS
+    name: Build iOS (.app + unsigned .ipa)
     runs-on: macos-latest
+    needs: test
     steps:
       - uses: actions/checkout@v4
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44.0'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build iOS (no code signing)
+      - name: Build iOS Release (no code signing)
         run: |
           flutter build ios --release --no-codesign
 
-      - name: Upload iOS build
+      - name: Verify .app bundle
+        run: |
+          echo "=== iOS .app bundle info ==="
+          ls -lh build/ios/iphoneos/
+          file build/ios/iphoneos/Runner.app
+
+      - name: Package unsigned .ipa
+        run: |
+          mkdir -p build/ios/iphoneos/Payload
+          cp -r build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
+          cd build/ios/iphoneos
+          zip -r ../../../sleep-talk-unsigned.ipa Payload/
+          echo "=== Unsigned IPA info ==="
+          ls -lh ../../../sleep-talk-unsigned.ipa
+          file ../../../sleep-talk-unsigned.ipa
+
+      - name: Upload .app artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ios-build
+          name: sleep-talk-ios-app
           path: build/ios/iphoneos/Runner.app
+          retention-days: 90
 
-  test:
-    name: Run Tests
+      - name: Upload unsigned .ipa artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sleep-talk-ios-unsigned-ipa
+          path: sleep-talk-unsigned.ipa
+          retention-days: 90
+
+  create-release:
+    name: Create GitHub Release
     runs-on: ubuntu-latest
+    needs: [build-android, build-ios]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
         with:
-          flutter-version: '3.44.0'
-          channel: 'stable'
+          path: artifacts
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: List artifacts
+        run: |
+          echo "=== Downloaded artifacts ==="
+          find artifacts -type f -ls
 
-      - name: Run tests
-        run: flutter test
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.APP_VERSION }}-build-${{ github.run_number }}
+          name: Release v${{ env.APP_VERSION }} (Build ${{ github.run_number }})
+          body: |
+            ## Sleep Talk Recorder v${{ env.APP_VERSION }} (Build ${{ github.run_number }})
+
+            ### Build Information
+            - **Build Time:** ${{ github.event.head_commit.timestamp }}
+            - **Commit:** ${{ github.sha }}
+            - **Branch:** ${{ github.ref_name }}
+            - **Triggered by:** ${{ github.actor }}
+
+            ### Downloads
+            - **Android APK:** Direct install for Android devices
+            - **Android AppBundle (AAB):** For Google Play Store submission
+            - **iOS .app:** iOS app bundle (unsigned)
+            - **iOS unsigned .ipa:** iOS IPA package (unsigned, can be sideloaded via AltStore/SideStore)
+
+            ### Notes
+            - iOS builds are unsigned (no Apple Developer account required for build)
+            - To install iOS build on device, use AltStore, SideStore, or Sideloadly
+            - Android APK can be installed directly on Android devices
+          files: |
+            artifacts/**/*.apk
+            artifacts/**/*.aab
+            artifacts/**/*.ipa
+            artifacts/**/*.app
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
