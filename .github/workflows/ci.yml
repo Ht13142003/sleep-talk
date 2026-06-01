@@ -102,9 +102,7 @@ jobs:
 
       - name: Build iOS Release (no code signing)
         run: |
-          echo "=== Disabling code signing in project ==="
-          /usr/libexec/PlistBuddy -c "Set :objects:97C147071CF9000F007C117D:buildSettings:CODE_SIGNING_ALLOWED NO" ios/Runner.xcodeproj/project.pbxproj 2>/dev/null || true
-          echo "=== Building iOS ==="
+          echo "=== Building iOS with code signing disabled ==="
           flutter build ios --release --no-codesign
 
       - name: Verify .app bundle
