@@ -20,8 +20,7 @@
 |------|------|------|
 | Android | `app-release.apk` | 直接安装到 Android 设备 |
 | Android | `app-release.aab` | Google Play 商店发布用 |
-| iOS | `.ipa` | 未签名 iOS 应用（需个人签名） |
-| iOS | `framework/` | iOS Framework 格式（高级用户） |
+| iOS | `sleep-talk.ipa` | 未签名 iOS 应用（需个人签名） |
 
 ### 云端自动构建说明（🎉 无需本地环境！）
 

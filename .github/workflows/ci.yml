@@ -100,18 +100,33 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build iOS IPA (unsigned)
+      - name: Patch Xcode project for unsigned build
         run: |
-          flutter build ipa --release --no-codesign
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/Runner.xcodeproj/project.pbxproj
+          /usr/libexec/PlistBuddy -c "Add :ProvisioningStyle string Manual" ios/Runner/Info.plist 2>/dev/null || true
+          echo "Xcode project patched for unsigned build"
+
+      - name: Build iOS app (no codesign)
+        run: |
+          flutter build ios --release --no-codesign
+          echo "=== .app file info ==="
+          ls -lh build/ios/Release-iphoneos/
+          ls -lh build/ios/Release-iphoneos/Runner.app/ | head -20
+
+      - name: Package as IPA
+        run: |
+          mkdir -p Payload
+          cp -r build/ios/Release-iphoneos/Runner.app Payload/
+          zip -r -y sleep-talk.ipa Payload
           echo "=== IPA file info ==="
-          ls -lh build/ios/ipa/ios/
-          file build/ios/ipa/ios/*.ipa
+          ls -lh sleep-talk.ipa
+          file sleep-talk.ipa
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
           name: sleep-talk-ios-ipa
-          path: build/ios/ipa/ios/*.ipa
+          path: sleep-talk.ipa
           retention-days: 90
 
   create-release:
@@ -153,8 +168,7 @@ jobs:
             - **AAB (App Bundle):** Required for Google Play Store submission
 
             #### iOS (No Mac Required!)
-            - **IPA File:** Unsigned iOS app package for personal signing
-            - **iOS Framework:** Alternative bundle format for advanced users
+            - **IPA File:** Unsigned iOS app package (personal signing required)
 
             ### Installation Guide
 
