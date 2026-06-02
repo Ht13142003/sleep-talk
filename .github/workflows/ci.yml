@@ -100,11 +100,21 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build .app (Flutter post-check fails without signing, .app is still built)
+      - name: Build .app (Flutter deletes .app on post-check failure, recover from DerivedData)
         run: |
-          flutter build ios --release --no-codesign || echo "Flutter post-build validation skipped (app is unsigned)"
-          echo "=== Checking if .app was built ==="
-          ls -lh build/ios/iphoneos/Runner.app
+          flutter build ios --release --no-codesign || echo "Flutter post-check failed (expected)"
+          echo "=== Recovering .app from DerivedData ==="
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "Runner.app" -path "*/Release-iphoneos/*" 2>/dev/null | head -1)
+          if [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ]; then
+            echo "Found .app at: $APP_PATH"
+            mkdir -p build/ios/iphoneos
+            cp -R "$APP_PATH" build/ios/iphoneos/
+            echo "=== .app recovered ==="
+            ls -lh build/ios/iphoneos/Runner.app
+          else
+            echo "ERROR: .app not found in DerivedData"
+            exit 1
+          fi
 
       - name: Verify .app bundle
         run: |
