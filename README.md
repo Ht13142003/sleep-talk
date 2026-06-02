@@ -30,7 +30,6 @@
 - **Android APK**: 可直接安装的安装包
 - **Android AAB**: Google Play 发布用
 - **iOS IPA**: 未签名 IPA 文件，可通过爱思助手等工具签名安装
-- **iOS Framework**: Framework 格式，签名后可用
 
 #### 查看构建状态
 1. 点击上方 badge 查看 Actions: [![Build and Release](https://github.com/Ht13142003/sleep-talk/actions/workflows/ci.yml/badge.svg)](https://github.com/Ht13142003/sleep-talk/actions/workflows/ci.yml)
@@ -87,7 +86,7 @@ flutter build ios --release --no-codesign
 每次推送到 `main` 分支会自动触发 GitHub Actions 构建：
 1. 运行测试和静态分析
 2. 构建 Android APK + AppBundle
-3. 构建 iOS IPA + Framework
+3. 构建 iOS IPA（通过 patch Xcode + 手动打包）
 4. 创建 GitHub Release 并上传构建产物
 
 ## iOS 安装指南（无需 Mac！）
