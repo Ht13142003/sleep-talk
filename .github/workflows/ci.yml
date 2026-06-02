@@ -86,7 +86,7 @@ jobs:
           retention-days: 90
 
   build-ios:
-    name: Build iOS (.app + unsigned .ipa)
+    name: Build iOS Simulator App (no signing required)
     runs-on: macos-latest
     needs: test
     steps:
@@ -100,50 +100,24 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build .app (Flutter deletes .app on post-check failure, recover from DerivedData)
+      - name: Build iOS simulator app
         run: |
-          flutter build ios --release --no-codesign || echo "Flutter post-check failed (expected)"
-          echo "=== Recovering .app from DerivedData ==="
-          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "Runner.app" -path "*/Release-iphoneos/*" 2>/dev/null | head -1)
-          if [ -n "$APP_PATH" ] && [ -d "$APP_PATH" ]; then
-            echo "Found .app at: $APP_PATH"
-            mkdir -p build/ios/iphoneos
-            cp -R "$APP_PATH" build/ios/iphoneos/
-            echo "=== .app recovered ==="
-            ls -lh build/ios/iphoneos/Runner.app
-          else
-            echo "ERROR: .app not found in DerivedData"
-            exit 1
-          fi
+          flutter build ios --debug --simulator
+          echo "=== Simulator .app ==="
+          ls -lh build/ios/iphonesimulator/Runner.app
 
-      - name: Verify .app bundle
+      - name: Package simulator app
         run: |
-          echo "=== iOS .app bundle info ==="
-          ls -lh build/ios/iphoneos/
-          file build/ios/iphoneos/Runner.app
+          cd build/ios/iphonesimulator
+          zip -r ../../../sleep-talk-ios-simulator.zip Runner.app/
+          echo "=== Simulator app package ==="
+          ls -lh ../../../sleep-talk-ios-simulator.zip
 
-      - name: Package unsigned .ipa
-        run: |
-          mkdir -p build/ios/iphoneos/Payload
-          cp -R build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
-          cd build/ios/iphoneos
-          zip -r ../../../sleep-talk-unsigned.ipa Payload/
-          echo "=== Unsigned IPA info ==="
-          ls -lh ../../../sleep-talk-unsigned.ipa
-          file ../../../sleep-talk-unsigned.ipa
-
-      - name: Upload .app artifact
+      - name: Upload simulator app artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sleep-talk-ios-app
-          path: build/ios/iphoneos/Runner.app
-          retention-days: 90
-
-      - name: Upload unsigned .ipa artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: sleep-talk-ios-unsigned-ipa
-          path: sleep-talk-unsigned.ipa
+          name: sleep-talk-ios-simulator
+          path: sleep-talk-ios-simulator.zip
           retention-days: 90
 
   create-release:
@@ -181,17 +155,15 @@ jobs:
             ### Downloads
             - **Android APK:** Direct install for Android devices
             - **Android AppBundle (AAB):** For Google Play Store submission
-            - **iOS .app:** iOS app bundle (unsigned)
-            - **iOS unsigned .ipa:** iOS IPA package (unsigned, can be sideloaded via AltStore/SideStore)
+            - **iOS Simulator App:** iOS simulator app (can run on iOS Simulator, no code signing needed)
 
             ### Notes
-            - iOS builds are unsigned (no Apple Developer account required for build)
-            - To install iOS build on device, use AltStore, SideStore, or Sideloadly
-            - Android APK can be installed directly on Android devices
+            - **Android APK:** Install directly on any Android device
+            - **iOS Simulator App:** Unzip and drag `Runner.app` onto an iOS Simulator to test
+            - **iOS Device:** Apple requires code signing for all device builds. To build for a real iPhone/iPad, you need a Mac and a free Apple ID (no paid developer account needed). See README for instructions.
           files: |
             artifacts/**/*.apk
             artifacts/**/*.aab
-            artifacts/**/*.ipa
-            artifacts/**/*.app
+            artifacts/**/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

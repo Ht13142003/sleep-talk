@@ -20,8 +20,26 @@
 |------|------|------|
 | Android | `app-release.apk` | 直接安装到 Android 设备 |
 | Android | `app-release.aab` | Google Play 商店发布用 |
-| iOS | `sleep-talk-unsigned.ipa` | 未签名 IPA，需使用 AltStore/SideStore 侧载安装 |
-| iOS | `Runner.app` | iOS 原始应用包 |
+| iOS | `sleep-talk-ios-simulator.zip` | iOS 模拟器应用（解压后拖入模拟器即可测试） |
+
+### iOS 真机安装说明
+
+Apple 强制要求所有真机构建必须进行代码签名。GitHub Actions CI 无法在缺少 Apple 开发者账号的情况下生成可安装到 iPhone/iPad 的 IPA 文件。
+
+**要在真机上运行，请在有 Mac 的环境下操作：**
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/Ht13142003/sleep-talk.git
+cd sleep-talk
+
+# 2. 获取依赖
+flutter pub get
+
+# 3. 用免费 Apple ID 签名并安装（无需付费开发者账号）
+#    在 Xcode 中：Signing & Capabilities > Team > 选择你的 Apple ID
+flutter run --release
+```
 
 ## 技术栈
 
