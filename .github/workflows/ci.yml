@@ -100,21 +100,16 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build with xcodebuild (no signing)
+      - name: Build iOS Release (no code signing)
+        env:
+          CODE_SIGN_IDENTITY: ""
+          CODE_SIGNING_REQUIRED: "NO"
+          CODE_SIGNING_ALLOWED: "NO"
+          PROVISIONING_PROFILE_SPECIFIER: ""
+          DEVELOPMENT_TEAM: ""
+          EXPANDED_CODE_SIGN_IDENTITY: ""
         run: |
-          cd ios
-          xcodebuild clean build \
-            -workspace Runner.xcworkspace \
-            -scheme Runner \
-            -configuration Release \
-            -sdk iphoneos \
-            -destination 'generic/platform=iOS' \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            PROVISIONING_PROFILE_SPECIFIER="" \
-            DEVELOPMENT_TEAM="" \
-            ONLY_ACTIVE_ARCH=NO
+          flutter build ios --release --no-codesign
 
       - name: Verify .app bundle
         run: |
