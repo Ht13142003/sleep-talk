@@ -23,10 +23,8 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
 
-      - name: Clean and install dependencies
-        run: |
-          flutter clean
-          flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
       - name: Run tests
         run: flutter test --timeout 10m
@@ -51,16 +49,14 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
 
-      - name: Clean and install dependencies
-        run: |
-          flutter clean
-          flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
-      - name: Build Release APK with verbose output
-        run: flutter build apk --release --verbose
+      - name: Build Release APK
+        run: flutter build apk --release
 
-      - name: Build Release AppBundle with verbose output
-        run: flutter build appbundle --release --verbose
+      - name: Build Release AppBundle
+        run: flutter build appbundle --release
 
       - name: Verify APK file
         run: |
@@ -105,11 +101,10 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
 
-      - name: Clean and install dependencies
+      - name: Install dependencies
         run: |
-          flutter clean
           flutter pub get
-          cd ios && pod install --repo-update && cd ..
+          cd ios && pod install && cd ..
 
       - name: Install xcodeproj gem
         run: gem install xcodeproj
@@ -134,9 +129,9 @@ jobs:
           puts "Xcode project patched successfully"
           '
 
-      - name: Build iOS app (no codesign) with verbose output
+      - name: Build iOS app (no codesign)
         run: |
-          flutter build ios --release --no-codesign --verbose
+          flutter build ios --release --no-codesign
           echo "=== .app file info ==="
           APP_PATH=$(find build/ios -name "Runner.app" -path "*/Release-iphoneos/*" -maxdepth 5 | head -1)
           echo "Found app at: $APP_PATH"
@@ -202,40 +197,28 @@ jobs:
             ### Downloads
 
             #### Android
-            - **APK:** Direct install for Android devices (recommended for most users)
+            - **APK:** Direct install for Android devices
             - **AAB (App Bundle):** Required for Google Play Store submission
 
-            #### iOS (No Mac Required!)
+            #### iOS
             - **IPA File:** Unsigned iOS app package (personal signing required)
 
             ### Installation Guide
 
             #### Android
             1. Download the `.apk` file
-            2. Enable "Install from unknown sources" in Settings → Security
+            2. Enable "Install from unknown sources" in Settings
             3. Open the APK file and install
 
-            #### iOS (Personal Signing - No Developer Account Needed)
-            **Method 1: 爱思助手 (Aisi Assistant)**
+            #### iOS (Personal Signing via 爱思助手)
             1. Download the `.ipa` file
             2. Connect your iPhone to computer
             3. Open 爱思助手 and go to "应用游戏"
             4. Drag and drop the `.ipa` file to install
             5. Trust the developer certificate in Settings → General → Device Management
-
-            **Method 2: TrollStore (Advanced Users)**
-            1. Download the `.ipa` file
-            2. Use TrollStore to install directly on your iPhone
-            3. No computer required after initial TrollStore setup
-
-            ### Notes
-            - **Android:** Works on any Android device (min SDK: Android 5.0)
-            - **iOS:** Requires personal signing - each device needs separate signing
-            - **GitHub Actions:** This build runs automatically in the cloud - no Mac needed!
           files: |
             artifacts/**/*.apk
             artifacts/**/*.aab
             artifacts/**/*.ipa
-            artifacts/**/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
