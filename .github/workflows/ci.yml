@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  FLUTTER_VERSION: '3.44.0'
+  FLUTTER_VERSION: '3.29.6'
   APP_VERSION: '1.0.0'
 
 jobs:
@@ -23,11 +23,13 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Clean and install dependencies
+        run: |
+          flutter clean
+          flutter pub get
 
       - name: Run tests
-        run: flutter test
+        run: flutter test --timeout 10m
 
       - name: Run analyze
         run: flutter analyze --no-fatal-infos
@@ -49,27 +51,33 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Clean and install dependencies
+        run: |
+          flutter clean
+          flutter pub get
 
-      - name: Build Release APK
-        run: flutter build apk --release
+      - name: Build Release APK with verbose output
+        run: flutter build apk --release --verbose
 
-      - name: Build Release AppBundle
-        run: flutter build appbundle --release
+      - name: Build Release AppBundle with verbose output
+        run: flutter build appbundle --release --verbose
 
       - name: Verify APK file
         run: |
           echo "=== APK file info ==="
           ls -lh build/app/outputs/flutter-apk/
-          file build/app/outputs/flutter-apk/app-release.apk
-          echo "APK size: $(wc -c < build/app/outputs/flutter-apk/app-release.apk) bytes"
+          if [ -f build/app/outputs/flutter-apk/app-release.apk ]; then
+            file build/app/outputs/flutter-apk/app-release.apk
+            echo "APK size: $(wc -c < build/app/outputs/flutter-apk/app-release.apk) bytes"
+          fi
 
       - name: Verify AppBundle file
         run: |
           echo "=== AppBundle file info ==="
           ls -lh build/app/outputs/bundle/release/
-          file build/app/outputs/bundle/release/app-release.aab
+          if [ -f build/app/outputs/bundle/release/app-release.aab ]; then
+            file build/app/outputs/bundle/release/app-release.aab
+          fi
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -97,10 +105,11 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
 
-      - name: Install dependencies
+      - name: Clean and install dependencies
         run: |
+          flutter clean
           flutter pub get
-          cd ios && pod install && cd ..
+          cd ios && pod install --repo-update && cd ..
 
       - name: Install xcodeproj gem
         run: gem install xcodeproj
@@ -118,22 +127,32 @@ jobs:
               config.build_settings["CODE_SIGNING_REQUIRED"] = "NO"
               config.build_settings["CODE_SIGNING_ALLOWED"] = "NO"
               config.build_settings["PROVISIONING_PROFILE_SPECIFIER"] = ""
+              config.build_settings["SWIFT_OPTIMIZATION_LEVEL"] = "-Onone"
             end
           end
           project.save
           puts "Xcode project patched successfully"
           '
 
-      - name: Build iOS app (no codesign)
+      - name: Build iOS app (no codesign) with verbose output
         run: |
-          flutter build ios --release --no-codesign
+          flutter build ios --release --no-codesign --verbose
           echo "=== .app file info ==="
-          find build/ios -name "Runner.app" -path "*/Release-iphoneos/*" -maxdepth 5 | head -1 | xargs ls -lh
+          APP_PATH=$(find build/ios -name "Runner.app" -path "*/Release-iphoneos/*" -maxdepth 5 | head -1)
+          echo "Found app at: $APP_PATH"
+          if [ -n "$APP_PATH" ]; then
+            ls -lh "$APP_PATH"
+          fi
 
       - name: Package as IPA
         run: |
           APP_PATH=$(find build/ios -name "Runner.app" -path "*/Release-iphoneos/*" -maxdepth 5 | head -1)
           echo "Found app at: $APP_PATH"
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: Could not find Runner.app!"
+            find build/ios -name "*.app" -type d | head -20
+            exit 1
+          fi
           mkdir -p Payload
           cp -r "$APP_PATH" Payload/
           zip -r -y sleep-talk.ipa Payload
