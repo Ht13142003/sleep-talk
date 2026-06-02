@@ -88,8 +88,93 @@ flutter build ios --release --no-codesign
 每次推送到 `main` 分支会自动触发 GitHub Actions 构建：
 1. 运行测试和静态分析
 2. 构建 Android APK + AppBundle
-3. 构建 iOS .app + 未签名 IPA
+3. 构建 iOS IPA + Framework
 4. 创建 GitHub Release 并上传构建产物
+
+## iOS 安装指南（无需 Mac！）
+
+### 方法一：爱思助手（推荐，最简单）
+
+#### 步骤 1：下载 IPA 文件
+1. 进入项目的 [Releases](https://github.com/Ht13142003/sleep-talk/releases) 页面
+2. 下载带有 `.ipa` 文件的版本
+3. 解压下载的压缩包（如果是 .zip 格式）
+
+#### 步骤 2：使用爱思助手签名安装
+1. 在电脑上安装 [爱思助手](https://www.i4.cn/)
+2. 用数据线连接 iPhone 到电脑
+3. 打开爱思助手，等待识别到设备
+4. 点击左侧菜单的"应用游戏"
+5. 点击"导入应用"，选择下载的 `.ipa` 文件
+6. 选择签名方式：
+   - **免费签名（推荐）**: 使用你的 Apple ID 签名（需要关闭双重认证）
+   - **已购签名**: 如果你有付费开发者账号
+7. 点击"开始签名"
+8. 签名完成后，点击"安装"
+
+#### 步骤 3：在 iPhone 上信任证书
+1. 安装完成后，打开 APP，会提示"不受信任的企业级开发者"
+2. 进入 iPhone **设置** → **通用** → **VPN 与设备管理**
+3. 找到你的 Apple ID 邮箱，点击信任
+4. 返回主屏幕，打开 APP
+5. 首次打开时会请求麦克风权限，点击"允许"
+
+### 方法二：TrollStore（永久安装，无需签名）
+
+#### 前提条件
+- iPhone 已越狱并安装 TrollStore
+- 如果未安装 TrollStore，需要先通过其他方式安装一次 APP
+
+#### 步骤
+1. 从 Releases 下载 `.ipa` 文件
+2. 使用文件 App 或 AirDrop 将 IPA 发送到 iPhone
+3. 点击 IPA 文件，选择"用 TrollStore 打开"
+4. APP 会自动安装并永久保存
+
+### 方法三：Mac + Xcode（传统方式）
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/Ht13142003/sleep-talk.git
+cd sleep-talk
+
+# 2. 获取依赖
+flutter pub get
+
+# 3. 打开 Xcode 项目
+open ios/Runner.xcworkspace
+
+# 4. 在 Xcode 中：
+#    - Signing & Capabilities > Team > 选择你的 Apple ID（免费即可）
+#    - Bundle ID 改成唯一的
+
+# 5. 直接运行
+flutter run --release
+```
+
+### 常见问题
+
+#### Q: 为什么 iOS APP 需要签名？
+A: Apple 要求所有安装的 APP 必须有有效的签名。免费 Apple ID 签名的 APP 有效期为 7 天，过期后需要重新签名。
+
+#### Q: 爱思助手签名失败怎么办？
+A: 
+- 确保关闭了 Apple ID 的双重认证
+- 尝试使用不同的 Apple ID
+- 检查网络连接
+- 可能是爱思助手服务器问题，稍后再试
+
+#### Q: 签名后 APP 无法安装？
+A: 
+- 检查 iPhone 存储空间是否充足
+- 尝试重启 iPhone
+- 确保设备管理中已信任该证书
+
+#### Q: APP 打开后闪退？
+A: 
+- 检查是否已信任开发者证书
+- 确认麦克风权限已开启
+- 查看 Xcode 控制台的具体错误信息
 
 ## 项目结构
 
