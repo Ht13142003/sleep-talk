@@ -86,7 +86,7 @@ jobs:
           retention-days: 90
 
   build-ios:
-    name: Build iOS Device App (unsigned, for personal signing)
+    name: Build iOS IPA (Unsigned for Personal Signing)
     runs-on: macos-latest
     needs: test
     steps:
@@ -100,33 +100,18 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build iOS device app (unsiged)
+      - name: Build iOS IPA (unsigned)
         run: |
-          flutter build ios --debug --no-codesign || true
-          echo "=== .app location ==="
-          ls -la build/ios/
-          ls -la build/ios/iphoneos/ || echo "iphoneos dir not found"
-          ls -la build/ios/iphoneos/Runner.app/ || true
+          flutter build ipa --release --no-codesign
+          echo "=== IPA file info ==="
+          ls -lh build/ios/ipa/ios/
+          file build/ios/ipa/ios/*.ipa
 
-      - name: Package Runner.app for signing
-        run: |
-          if [ -d "build/ios/iphoneos/Runner.app" ]; then
-            cd build/ios/iphoneos
-            zip -r ../../../sleep-talk-ios-device.zip Runner.app/
-            cd ../../..
-          elif [ -d "build/ios/Debug-iphoneos/Runner.app" ]; then
-            cd build/ios/Debug-iphoneos
-            zip -r ../../sleep-talk-ios-device.zip Runner.app/
-            cd ../..
-          fi
-          echo "=== Final package ==="
-          ls -lh sleep-talk-ios-device.zip 2>/dev/null || echo "file not found"
-
-      - name: Upload device app artifact
+      - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sleep-talk-ios-device
-          path: sleep-talk-ios-device.zip
+          name: sleep-talk-ios-ipa
+          path: build/ios/ipa/ios/*.ipa
           retention-days: 90
 
   create-release:
@@ -162,16 +147,43 @@ jobs:
             - **Triggered by:** ${{ github.actor }}
 
             ### Downloads
-            - **Android APK:** Direct install for Android devices
-            - **Android AppBundle (AAB):** For Google Play Store submission
-            - **iOS Device App:** Unsigned iOS app zip (unzip to get `Runner.app`, sign with Aisi Assistant/TrollStore for your personal iPhone)
+
+            #### Android
+            - **APK:** Direct install for Android devices (recommended for most users)
+            - **AAB (App Bundle):** Required for Google Play Store submission
+
+            #### iOS (No Mac Required!)
+            - **IPA File:** Unsigned iOS app package for personal signing
+            - **iOS Framework:** Alternative bundle format for advanced users
+
+            ### Installation Guide
+
+            #### Android
+            1. Download the `.apk` file
+            2. Enable "Install from unknown sources" in Settings → Security
+            3. Open the APK file and install
+
+            #### iOS (Personal Signing - No Developer Account Needed)
+            **Method 1: 爱思助手 (Aisi Assistant)**
+            1. Download the `.ipa` file
+            2. Connect your iPhone to computer
+            3. Open 爱思助手 and go to "应用游戏"
+            4. Drag and drop the `.ipa` file to install
+            5. Trust the developer certificate in Settings → General → Device Management
+
+            **Method 2: TrollStore (Advanced Users)**
+            1. Download the `.ipa` file
+            2. Use TrollStore to install directly on your iPhone
+            3. No computer required after initial TrollStore setup
 
             ### Notes
-            - **Android APK:** Install directly on any Android device
-            - **iOS Device:** Download `sleep-talk-ios-device.zip`, unzip to get `Runner.app`, use爱思助手 (Aisi Assistant) to sign and install to your iPhone. See README for detailed instructions.
+            - **Android:** Works on any Android device (min SDK: Android 5.0)
+            - **iOS:** Requires personal signing - each device needs separate signing
+            - **GitHub Actions:** This build runs automatically in the cloud - no Mac needed!
           files: |
             artifacts/**/*.apk
             artifacts/**/*.aab
+            artifacts/**/*.ipa
             artifacts/**/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

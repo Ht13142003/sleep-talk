@@ -20,56 +20,29 @@
 |------|------|------|
 | Android | `app-release.apk` | 直接安装到 Android 设备 |
 | Android | `app-release.aab` | Google Play 商店发布用 |
-| iOS | `sleep-talk-ios-simulator.zip` | iOS 模拟器应用（解压后拖入模拟器即可测试） |
+| iOS | `.ipa` | 未签名 iOS 应用（需个人签名） |
+| iOS | `framework/` | iOS Framework 格式（高级用户） |
 
-### iOS 真机安装说明（无需 Mac，用爱思助手）
+### 云端自动构建说明（🎉 无需本地环境！）
 
-#### 方案一：Windows + 爱思助手（推荐，无需 Mac）
+本项目使用 **GitHub Actions** 实现全自动云端打包，推送到 `main` 分支后会自动构建并发布 Release。
 
-```bash
-# 1. 在本地 Windows 构建 iOS 应用（需 Flutter + 爱思助手）
-# 先在项目根目录执行
-flutter pub get
+#### 构建产物
+- **Android APK**: 可直接安装的安装包
+- **Android AAB**: Google Play 发布用
+- **iOS IPA**: 未签名 IPA 文件，可通过爱思助手等工具签名安装
+- **iOS Framework**: Framework 格式，签名后可用
 
-# 2. 构建 Debug ipa（签名后可用）
-flutter build ios --debug --no-codesign
+#### 查看构建状态
+1. 点击上方 badge 查看 Actions: [![Build and Release](https://github.com/Ht13142003/sleep-talk/actions/workflows/ci.yml/badge.svg)](https://github.com/Ht13142003/sleep-talk/actions/workflows/ci.yml)
+2. 点击 "Actions" 标签页查看构建历史
+3. 点击具体构建查看构建日志
 
-# 3. 打开爱思助手，连接 iPhone
-#    - 工具箱 > 签名/越狱 > IPA 签名
-#    - 选择 build/ios/iphoneos/Runner.app 或导出的 IPA
-#    - 用你的 Apple ID 免费签名
-#    - 安装到设备
-```
-
-**安装后的关键步骤：**
-
-在 iPhone 上打开：
-1. 设置 → 通用 → VPN 与设备管理 → 信任你的 Apple ID 证书
-2. 打开 APP，点击“开始监测”按钮时会弹出麦克风权限请求，点击“允许”
-3. 如果没弹出权限请求，请在：设置 → Sleep Talk Recorder → 手动开启“麦克风”权限
-
----
-
-#### 方案二：Mac + Xcode（传统方式）
-
-```bash
-# 1. 克隆项目
-git clone https://github.com/Ht13142003/sleep-talk.git
-cd sleep-talk
-
-# 2. 获取依赖
-flutter pub get
-
-# 3. 打开 Xcode 项目
-open ios/Runner.xcworkspace
-
-# 4. 在 Xcode 中：
-#    - Signing & Capabilities > Team > 选择你的 Apple ID（免费即可）
-#    - Bundle ID 改成唯一的
-
-# 5. 直接运行
-flutter run --release
-```
+#### 手动触发构建
+1. 进入项目仓库，点击 "Actions" 标签页
+2. 选择 "Build and Release" 工作流
+3. 点击 "Run workflow"
+4. 选择分支，点击 "Run workflow"
 
 ## 技术栈
 
