@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
 import '../services/monitoring_service.dart';
 import '../services/audio_player_service.dart';
 import '../database/database_helper.dart';
@@ -30,6 +30,7 @@ class _HomePageState extends State<HomePage> {
   List<RecordingModel> _recentRecordings = [];
   StreamSubscription<MonitoringState>? _stateSub;
   StreamSubscription<double>? _amplitudeSub;
+  String? _playingFile;
 
   @override
   void initState() {
@@ -42,9 +43,7 @@ class _HomePageState extends State<HomePage> {
       });
     });
     _amplitudeSub = _monitoringService.onAmplitudeChanged.listen((amp) {
-      if (mounted) {
-        setState(() => _amplitude = amp);
-      }
+      if (mounted) setState(() => _amplitude = amp);
     });
   }
 
@@ -70,30 +69,36 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _toggleMonitoring() async {
-    final service = FlutterBackgroundService();
-
     if (_isMonitoring) {
-      service.invoke('stopMonitoring');
+      // 停止监听
+      _stopAndroidService();
       await _monitoringService.stopMonitoring();
-      WakelockPlus.disable();
       setState(() => _isMonitoring = false);
     } else {
-      final started = await service.startService();
-      if (started) {
-        service.invoke('startMonitoring');
-        await Future.delayed(const Duration(milliseconds: 500));
-        final success = await _monitoringService.startMonitoring();
-        if (success) {
-          WakelockPlus.enable();
-          setState(() => _isMonitoring = true);
-        } else {
-          service.invoke('stopMonitoring');
-        }
+      // 开始监听
+      final success = await _monitoringService.startMonitoring();
+      if (success) {
+        _startAndroidService();
+        setState(() => _isMonitoring = true);
       }
     }
   }
 
-  String? _playingFile;
+  void _startAndroidService() {
+    if (!Platform.isAndroid) return;
+    final service = FlutterBackgroundService();
+    service.startService().then((started) {
+      if (started) {
+        service.invoke('startMonitoring');
+      }
+    });
+  }
+
+  void _stopAndroidService() {
+    if (!Platform.isAndroid) return;
+    final service = FlutterBackgroundService();
+    service.invoke('stopMonitoring');
+  }
 
   Future<void> _playRecording(RecordingModel recording) async {
     if (_playingFile == recording.filePath) {
@@ -116,9 +121,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sleep Talk Recorder'),
-      ),
+      appBar: AppBar(title: const Text('Sleep Talk Recorder')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: 24),
@@ -133,7 +136,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 32),
               _buildToggleButton(),
               const SizedBox(height: 40),
-              _buildLowPowerIndicator(),
+              _buildInfoCard(),
               const SizedBox(height: 32),
               _buildRecentSection(),
             ],
@@ -191,7 +194,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildLowPowerIndicator() {
+  Widget _buildInfoCard() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
       padding: const EdgeInsets.all(16),
@@ -202,14 +205,14 @@ class _HomePageState extends State<HomePage> {
       ),
       child: Row(
         children: [
-          Icon(Icons.battery_saver, color: AppTheme.accentTeal, size: 28),
+          const Icon(Icons.info_outline, color: AppTheme.accentTeal, size: 28),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Ultra-Low Power Mode',
+                  'How It Works',
                   style: TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 14,
@@ -219,8 +222,8 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 4),
                 Text(
                   _isMonitoring
-                      ? 'VAD active - only records when voice detected'
-                      : 'Tap start to begin monitoring',
+                      ? 'VAD active — only saves audio when voice detected'
+                      : 'Press Start to begin monitoring. The app works in background and when device is locked.',
                   style: const TextStyle(
                     color: AppTheme.textSecondary,
                     fontSize: 12,
@@ -229,22 +232,6 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
           ),
-          if (_isMonitoring)
-            Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppTheme.accentTeal,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.accentTeal.withAlpha(100),
-                    blurRadius: 6,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );
