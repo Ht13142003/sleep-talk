@@ -122,17 +122,33 @@ jobs:
           puts "Xcode project patched successfully"
           '
 
-      - name: Build iOS app (no codesign)
+      - name: Build iOS app with xcodebuild (bypass Flutter validation)
         run: |
-          flutter build ios --release --no-codesign
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath ../build/ios \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            ONLY_ACTIVE_ARCH=NO \
+            build
+          cd ..
           echo "=== .app file info ==="
-          ls -lh build/ios/Release-iphoneos/
-          ls -lh build/ios/Release-iphoneos/Runner.app/ | head -20
+          APP_PATH=$(find build/ios -name "Runner.app" -path "*/Release-iphoneos/*" | head -1)
+          echo "APP_PATH=$APP_PATH"
+          ls -lh "$APP_PATH" | head -20
 
       - name: Package as IPA
         run: |
+          APP_PATH=$(find build/ios -name "Runner.app" -path "*/Release-iphoneos/*" | head -1)
           mkdir -p Payload
-          cp -r build/ios/Release-iphoneos/Runner.app Payload/
+          cp -r "$APP_PATH" Payload/
           zip -r -y sleep-talk.ipa Payload
           echo "=== IPA file info ==="
           ls -lh sleep-talk.ipa
