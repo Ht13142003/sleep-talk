@@ -98,7 +98,9 @@ jobs:
           channel: 'stable'
 
       - name: Install dependencies
-        run: flutter pub get
+        run: |
+          flutter pub get
+          cd ios && pod install && cd ..
 
       - name: Install xcodeproj gem
         run: gem install xcodeproj
@@ -110,8 +112,8 @@ jobs:
           project = Xcodeproj::Project.open("ios/Runner.xcodeproj")
           project.targets.each do |target|
             target.build_configurations.each do |config|
-              config.build_settings["DEVELOPMENT_TEAM"] = ""
-              config.build_settings["CODE_SIGN_IDENTITY"] = ""
+              config.build_settings["DEVELOPMENT_TEAM"] = "0000000000"
+              config.build_settings["CODE_SIGN_IDENTITY"] = "iPhone Developer"
               config.build_settings["CODE_SIGN_STYLE"] = "Manual"
               config.build_settings["CODE_SIGNING_REQUIRED"] = "NO"
               config.build_settings["CODE_SIGNING_ALLOWED"] = "NO"
@@ -122,31 +124,16 @@ jobs:
           puts "Xcode project patched successfully"
           '
 
-      - name: Build iOS app with xcodebuild (bypass Flutter validation)
+      - name: Build iOS app (no codesign)
         run: |
-          cd ios
-          xcodebuild -workspace Runner.xcworkspace \
-            -scheme Runner \
-            -configuration Release \
-            -sdk iphoneos \
-            -destination 'generic/platform=iOS' \
-            -derivedDataPath ../build/ios \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            DEVELOPMENT_TEAM="" \
-            PROVISIONING_PROFILE_SPECIFIER="" \
-            ONLY_ACTIVE_ARCH=NO \
-            build
-          cd ..
+          flutter build ios --release --no-codesign
           echo "=== .app file info ==="
-          APP_PATH=$(find build/ios -name "Runner.app" -path "*/Release-iphoneos/*" | head -1)
-          echo "APP_PATH=$APP_PATH"
-          ls -lh "$APP_PATH" | head -20
+          find build/ios -name "Runner.app" -path "*/Release-iphoneos/*" -maxdepth 5 | head -1 | xargs ls -lh
 
       - name: Package as IPA
         run: |
-          APP_PATH=$(find build/ios -name "Runner.app" -path "*/Release-iphoneos/*" | head -1)
+          APP_PATH=$(find build/ios -name "Runner.app" -path "*/Release-iphoneos/*" -maxdepth 5 | head -1)
+          echo "Found app at: $APP_PATH"
           mkdir -p Payload
           cp -r "$APP_PATH" Payload/
           zip -r -y sleep-talk.ipa Payload
