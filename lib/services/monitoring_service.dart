@@ -36,8 +36,8 @@ class MonitoringService {
   Future<bool> startMonitoring() async {
     if (_state != MonitoringState.idle) return true;
 
-    final hasPermission = await _recorderService.hasPermission();
-    if (!hasPermission) return false;
+    final granted = await _recorderService.requestPermissions();
+    if (!granted) return false;
 
     _state = MonitoringState.listening;
     _stateController.add(_state);

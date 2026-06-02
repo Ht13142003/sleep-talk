@@ -22,11 +22,35 @@
 | Android | `app-release.aab` | Google Play 商店发布用 |
 | iOS | `sleep-talk-ios-simulator.zip` | iOS 模拟器应用（解压后拖入模拟器即可测试） |
 
-### iOS 真机安装说明
+### iOS 真机安装说明（无需 Mac，用爱思助手）
 
-Apple 强制要求所有真机构建必须进行代码签名。GitHub Actions CI 无法在缺少 Apple 开发者账号的情况下生成可安装到 iPhone/iPad 的 IPA 文件。
+#### 方案一：Windows + 爱思助手（推荐，无需 Mac）
 
-**要在真机上运行，请在有 Mac 的环境下操作：**
+```bash
+# 1. 在本地 Windows 构建 iOS 应用（需 Flutter + 爱思助手）
+# 先在项目根目录执行
+flutter pub get
+
+# 2. 构建 Debug ipa（签名后可用）
+flutter build ios --debug --no-codesign
+
+# 3. 打开爱思助手，连接 iPhone
+#    - 工具箱 > 签名/越狱 > IPA 签名
+#    - 选择 build/ios/iphoneos/Runner.app 或导出的 IPA
+#    - 用你的 Apple ID 免费签名
+#    - 安装到设备
+```
+
+**安装后的关键步骤：**
+
+在 iPhone 上打开：
+1. 设置 → 通用 → VPN 与设备管理 → 信任你的 Apple ID 证书
+2. 打开 APP，点击“开始监测”按钮时会弹出麦克风权限请求，点击“允许”
+3. 如果没弹出权限请求，请在：设置 → Sleep Talk Recorder → 手动开启“麦克风”权限
+
+---
+
+#### 方案二：Mac + Xcode（传统方式）
 
 ```bash
 # 1. 克隆项目
@@ -36,8 +60,14 @@ cd sleep-talk
 # 2. 获取依赖
 flutter pub get
 
-# 3. 用免费 Apple ID 签名并安装（无需付费开发者账号）
-#    在 Xcode 中：Signing & Capabilities > Team > 选择你的 Apple ID
+# 3. 打开 Xcode 项目
+open ios/Runner.xcworkspace
+
+# 4. 在 Xcode 中：
+#    - Signing & Capabilities > Team > 选择你的 Apple ID（免费即可）
+#    - Bundle ID 改成唯一的
+
+# 5. 直接运行
 flutter run --release
 ```
 

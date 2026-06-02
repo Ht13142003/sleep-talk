@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:record/record.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class AudioRecorderService {
   final AudioRecorder _recorder = AudioRecorder();
@@ -19,6 +20,11 @@ class AudioRecorderService {
       await recordingsDir.create(recursive: true);
     }
     return recordingsDir.path;
+  }
+
+  Future<bool> requestPermissions() async {
+    final status = await Permission.microphone.request();
+    return status.isGranted;
   }
 
   Future<void> startRecording() async {

@@ -86,7 +86,7 @@ jobs:
           retention-days: 90
 
   build-ios:
-    name: Build iOS Simulator App (no signing required)
+    name: Build iOS Device App (unsigned, for personal signing)
     runs-on: macos-latest
     needs: test
     steps:
@@ -100,24 +100,33 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build iOS simulator app
+      - name: Build iOS device app (unsiged)
         run: |
-          flutter build ios --debug --simulator
-          echo "=== Simulator .app ==="
-          ls -lh build/ios/iphonesimulator/Runner.app
+          flutter build ios --debug --no-codesign || true
+          echo "=== .app location ==="
+          ls -la build/ios/
+          ls -la build/ios/iphoneos/ || echo "iphoneos dir not found"
+          ls -la build/ios/iphoneos/Runner.app/ || true
 
-      - name: Package simulator app
+      - name: Package Runner.app for signing
         run: |
-          cd build/ios/iphonesimulator
-          zip -r ../../../sleep-talk-ios-simulator.zip Runner.app/
-          echo "=== Simulator app package ==="
-          ls -lh ../../../sleep-talk-ios-simulator.zip
+          if [ -d "build/ios/iphoneos/Runner.app" ]; then
+            cd build/ios/iphoneos
+            zip -r ../../../sleep-talk-ios-device.zip Runner.app/
+            cd ../../..
+          elif [ -d "build/ios/Debug-iphoneos/Runner.app" ]; then
+            cd build/ios/Debug-iphoneos
+            zip -r ../../sleep-talk-ios-device.zip Runner.app/
+            cd ../..
+          fi
+          echo "=== Final package ==="
+          ls -lh sleep-talk-ios-device.zip 2>/dev/null || echo "file not found"
 
-      - name: Upload simulator app artifact
+      - name: Upload device app artifact
         uses: actions/upload-artifact@v4
         with:
-          name: sleep-talk-ios-simulator
-          path: sleep-talk-ios-simulator.zip
+          name: sleep-talk-ios-device
+          path: sleep-talk-ios-device.zip
           retention-days: 90
 
   create-release:
@@ -155,12 +164,11 @@ jobs:
             ### Downloads
             - **Android APK:** Direct install for Android devices
             - **Android AppBundle (AAB):** For Google Play Store submission
-            - **iOS Simulator App:** iOS simulator app (can run on iOS Simulator, no code signing needed)
+            - **iOS Device App:** Unsigned iOS app zip (unzip to get `Runner.app`, sign with Aisi Assistant/TrollStore for your personal iPhone)
 
             ### Notes
             - **Android APK:** Install directly on any Android device
-            - **iOS Simulator App:** Unzip and drag `Runner.app` onto an iOS Simulator to test
-            - **iOS Device:** Apple requires code signing for all device builds. To build for a real iPhone/iPad, you need a Mac and a free Apple ID (no paid developer account needed). See README for instructions.
+            - **iOS Device:** Download `sleep-talk-ios-device.zip`, unzip to get `Runner.app`, use爱思助手 (Aisi Assistant) to sign and install to your iPhone. See README for detailed instructions.
           files: |
             artifacts/**/*.apk
             artifacts/**/*.aab
