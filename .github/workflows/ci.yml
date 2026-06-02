@@ -100,16 +100,27 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build iOS Release (no code signing)
-        env:
-          CODE_SIGN_IDENTITY: ""
-          CODE_SIGNING_REQUIRED: "NO"
-          CODE_SIGNING_ALLOWED: "NO"
-          PROVISIONING_PROFILE_SPECIFIER: ""
-          DEVELOPMENT_TEAM: ""
-          EXPANDED_CODE_SIGN_IDENTITY: ""
+      - name: Generate ephemeral files (Flutter post-check will fail, expected)
         run: |
-          flutter build ios --release --no-codesign
+          flutter build ios --release --no-codesign || echo "Flutter post-build validation failed (expected, no code signing)"
+          echo "=== Checking ephemeral files ==="
+          ls -la ios/Flutter/ephemeral/
+
+      - name: Build .app with xcodebuild (no signing)
+        run: |
+          cd ios
+          xcodebuild build \
+            -workspace Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            DEVELOPMENT_TEAM="" \
+            ONLY_ACTIVE_ARCH=NO
 
       - name: Verify .app bundle
         run: |
