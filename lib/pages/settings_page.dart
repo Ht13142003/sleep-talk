@@ -186,7 +186,6 @@ class _SettingsPageState extends State<SettingsPage> {
             : null,
         value: value,
         onChanged: onChanged,
-        activeThumbColor: AppTheme.accentBlue,
       ),
     );
   }
