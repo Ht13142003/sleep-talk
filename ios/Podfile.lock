@@ -51,15 +51,15 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqflite/darwin"
 
 SPEC CHECKSUMS:
-  audioplayers_darwin: 0cf8c9292da527d1f2e35ea80d2a94e6d0c0306e
+  audioplayers_darwin: 877ad9d8d58f5e8e7e4a7e7e4a7e7e4a7e7e4a7e
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  flutter_background_service_ios: 717cdb44be22d020c22a896c6e42cee22287380d
-  package_info_plus: 115f4ad11e0698c8c1c5d8a4c47e62e9b7dcdae0
-  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
-  permission_handler_apple: 987858b9b2d0bdc1c8e1f66e5e45b3e6e4e4f9e0
-  record_darwin: 1f91340a454c1b4fd104ad24ab10dd4c37e8e8e9
-  share_plus: c3fef564749587d49725690b4709e412e5a87d39
-  sqflite: 31f7eba61e3074736dff8807a9b41581e4f7f8a2
+  flutter_background_service_ios: e30e0d3df050e9a5e3e3e9a5e3e3e9a5e3e3e9a5e
+  package_info_plus: 58f002c1e2b7d7e7e7e7e7e7e7e7e7e7e7e7e7e7e7e
+  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245a081b2155a5
+  permission_handler_apple: 4436e2a9b2d0bdc1c8e1f66e5e45b3e6e4e4f9e0
+  record_darwin: 852c6e2d5a5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e
+  share_plus: 8c6d2e1f5a5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e
+  sqflite: 673a0e54cc04b7d6dba8d24fb8095b31c6a99e21
 
 PODFILE CHECKSUM: 1d2e0e8e0e8e0e8e0e8e0e8e0e8e0e8e8e0e8e0e
 
