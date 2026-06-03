@@ -24,8 +24,8 @@ Future<void> initializeService() async {
     autoStart: false,
     isForegroundMode: true,
     notificationChannelId: 'sleep_talk_channel',
-    initialNotificationTitle: 'Sleep Talk Recorder',
-    initialNotificationContent: 'Monitoring for dream talks...',
+    initialNotificationTitle: '梦话记录仪',
+    initialNotificationContent: '正在监听梦话...',
     foregroundServiceNotificationId: 888,
     foregroundServiceTypes: [AndroidForegroundType.microphone],
   );
@@ -63,8 +63,8 @@ Future<bool> onStart(ServiceInstance service) async {
   service.on('startMonitoring').listen((event) {
     if (service is AndroidServiceInstance) {
       service.setForegroundNotificationInfo(
-        title: 'Sleep Talk Recorder',
-        content: 'Listening for dream talks...',
+        title: '梦话记录仪',
+        content: '正在监听梦话...',
       );
     }
   });
@@ -72,8 +72,8 @@ Future<bool> onStart(ServiceInstance service) async {
   service.on('stopMonitoring').listen((event) {
     if (service is AndroidServiceInstance) {
       service.setForegroundNotificationInfo(
-        title: 'Sleep Talk Recorder',
-        content: 'Monitoring stopped',
+        title: '梦话记录仪',
+        content: '监听已停止',
       );
     }
     service.stopSelf();
@@ -84,10 +84,10 @@ Future<bool> onStart(ServiceInstance service) async {
       final data = event as Map?;
       final state = data?['state'] as String? ?? 'listening';
       final content = state == 'recording'
-          ? 'Recording dream talk...'
-          : 'Listening for dream talks...';
+          ? '正在录音中...'
+          : '正在监听梦话...';
       service.setForegroundNotificationInfo(
-        title: 'Sleep Talk Recorder',
+      title: '梦话记录仪',
         content: content,
       );
     }
@@ -102,7 +102,7 @@ class SleepTalkApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sleep Talk Recorder',
+      title: '梦话记录仪',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       home: const MainScreen(),
@@ -148,17 +148,17 @@ class _MainScreenState extends State<MainScreen> {
             BottomNavigationBarItem(
               icon: Icon(Icons.home_rounded),
               activeIcon: Icon(Icons.home),
-              label: 'Home',
+              label: '首页',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.mic_none_rounded),
               activeIcon: Icon(Icons.mic),
-              label: 'Recordings',
+              label: '录音',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.settings_outlined),
               activeIcon: Icon(Icons.settings),
-              label: 'Settings',
+              label: '设置',
             ),
           ],
         ),

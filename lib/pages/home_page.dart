@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
 
   bool _isMonitoring = false;
   double _amplitude = 0.0;
-  String _statusText = 'Monitoring Off';
+  String _statusText = '监听已关闭';
   MonitoringState _currentState = MonitoringState.idle;
   List<RecordingModel> _recentRecordings = [];
   StreamSubscription<MonitoringState>? _stateSub;
@@ -50,13 +50,13 @@ class _HomePageState extends State<HomePage> {
   void _updateStatusText() {
     switch (_currentState) {
       case MonitoringState.idle:
-        _statusText = 'Monitoring Off';
+        _statusText = '监听已关闭';
         break;
       case MonitoringState.listening:
-        _statusText = 'Listening...';
+        _statusText = '监听中...';
         break;
       case MonitoringState.recording:
-        _statusText = 'Recording...';
+        _statusText = '录音中...';
         break;
     }
   }
@@ -121,7 +121,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sleep Talk Recorder')),
+      appBar: AppBar(title: const Text('梦话记录仪')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: 24),
@@ -180,7 +180,7 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(width: 8),
               Text(
-                _isMonitoring ? 'Stop Monitoring' : 'Start Monitoring',
+                _isMonitoring ? '停止监听' : '开始监听',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -212,7 +212,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'How It Works',
+                  '工作原理',
                   style: TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 14,
@@ -222,8 +222,8 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 4),
                 Text(
                   _isMonitoring
-                      ? 'VAD active — only saves audio when voice detected'
-                      : 'Press Start to begin monitoring. The app works in background and when device is locked.',
+                      ? 'VAD 活跃中 — 仅在检测到声音时录音'
+                      : '点击开始按钮启动监听，应用可在锁屏和后台运行。',
                   style: const TextStyle(
                     color: AppTheme.textSecondary,
                     fontSize: 12,
@@ -247,7 +247,7 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Recent Recordings',
+                '最近录音',
                 style: TextStyle(
                   color: AppTheme.textPrimary,
                   fontSize: 16,
@@ -261,7 +261,7 @@ class _HomePageState extends State<HomePage> {
                     MaterialPageRoute(builder: (_) => const RecordingsPage()),
                   ).then((_) => _loadRecentRecordings());
                 },
-                child: const Text('View All'),
+                child: const Text('查看全部'),
               ),
             ],
           ),
@@ -276,12 +276,12 @@ class _HomePageState extends State<HomePage> {
                   Icon(Icons.nights_stay, size: 48, color: AppTheme.textSecondary.withAlpha(100)),
                   const SizedBox(height: 12),
                   const Text(
-                    'No recordings yet',
+                    '暂无录音',
                     style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Start monitoring to capture dream talks',
+                    '开始监听后，梦话录音将显示在这里',
                     style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
                   ),
                 ],

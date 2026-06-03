@@ -33,16 +33,16 @@ class RecordingTile extends StatelessWidget {
         return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('Delete Recording'),
-            content: const Text('Are you sure you want to delete this recording?'),
+            title: const Text('删除录音'),
+            content: const Text('确定要删除这条录音吗？'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancel'),
+                child: const Text('取消'),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Delete', style: TextStyle(color: AppTheme.dangerRed)),
+                child: const Text('删除', style: TextStyle(color: AppTheme.dangerRed)),
               ),
             ],
           ),
@@ -159,11 +159,11 @@ class RecordingTile extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _menuItem(Icons.info_outline, 'Details', () {
+            _menuItem(Icons.info_outline, '详情', () {
               Navigator.pop(ctx);
               _showDetailsDialog(context);
             }),
-            _menuItem(Icons.delete_outline, 'Delete', () {
+            _menuItem(Icons.delete_outline, '删除', () {
               Navigator.pop(ctx);
               onDelete();
             }, isDestructive: true),
@@ -186,21 +186,21 @@ class RecordingTile extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Recording Details'),
+        title: const Text('录音详情'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _detailRow('File', recording.fileName),
-            _detailRow('Date', _formatDateTime(recording.createdAt)),
-            _detailRow('Duration', _formatDuration(recording.durationMs)),
-            _detailRow('Size', _formatFileSize(recording.fileSizeBytes)),
+            _detailRow('文件名', recording.fileName),
+            _detailRow('日期', _formatDateTime(recording.createdAt)),
+            _detailRow('时长', _formatDuration(recording.durationMs)),
+            _detailRow('大小', _formatFileSize(recording.fileSizeBytes)),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
+            child: const Text('关闭'),
           ),
         ],
       ),

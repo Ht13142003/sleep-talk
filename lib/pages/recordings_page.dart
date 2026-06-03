@@ -70,13 +70,13 @@ class _RecordingsPageState extends State<RecordingsPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Recording'),
-        content: Text('Delete "${recording.fileName}"?'),
+        title: const Text('删除录音'),
+        content: Text('删除"${recording.fileName}"？'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: AppTheme.dangerRed)),
+            child: const Text('删除', style: TextStyle(color: AppTheme.dangerRed)),
           ),
         ],
       ),
@@ -101,13 +101,13 @@ class _RecordingsPageState extends State<RecordingsPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Selected'),
-        content: Text('Delete ${_selectedIds.length} recording(s)?'),
+        title: const Text('批量删除'),
+        content: Text('删除选中的 ${_selectedIds.length} 条录音？'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: AppTheme.dangerRed)),
+            child: const Text('删除', style: TextStyle(color: AppTheme.dangerRed)),
           ),
         ],
       ),
@@ -168,7 +168,7 @@ class _RecordingsPageState extends State<RecordingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_selectionMode ? '${_selectedIds.length} Selected' : 'Recordings'),
+        title: Text(_selectionMode ? '已选 ${_selectedIds.length} 项' : '录音'),
         leading: _selectionMode
             ? IconButton(
                 icon: const Icon(Icons.close),
@@ -201,12 +201,12 @@ class _RecordingsPageState extends State<RecordingsPage> {
                         Icon(Icons.mic_none, size: 64, color: AppTheme.textSecondary.withAlpha(80)),
                         const SizedBox(height: 16),
                         const Text(
-                          'No recordings yet',
+                          '暂无录音',
                           style: TextStyle(color: AppTheme.textSecondary, fontSize: 16),
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'Captured dream talks will appear here',
+                          '录制的梦话将显示在这里',
                           style: TextStyle(color: AppTheme.textSecondary, fontSize: 13),
                         ),
                       ],

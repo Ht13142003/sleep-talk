@@ -23,14 +23,14 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: const Text('设置')),
       body: ListView(
         padding: const EdgeInsets.symmetric(vertical: 16),
         children: [
-          _buildSectionHeader('Audio Settings'),
+          _buildSectionHeader('音频设置'),
           _buildSliderTile(
-            'VAD Sensitivity',
-            'Lower = more sensitive to voice',
+            'VAD 灵敏度',
+            '值越低对声音越敏感',
             _vadThreshold,
             0.005,
             0.1,
@@ -38,17 +38,17 @@ class _SettingsPageState extends State<SettingsPage> {
             valueDisplay: (v) => v.toStringAsFixed(3),
           ),
           _buildSliderTile(
-            'Silence Duration',
-            'Seconds of silence before stopping recording',
+            '静音时长',
+            '停止录音前的静音等待时间',
             _silenceDuration,
             0.5,
             5.0,
             (value) => setState(() => _silenceDuration = value),
-            valueDisplay: (v) => '${v.toStringAsFixed(1)}s',
+            valueDisplay: (v) => '${v.toStringAsFixed(1)}秒',
           ),
           _buildSliderTile(
-            'Sample Rate',
-            'Recording quality',
+            '采样率',
+            '录音质量',
             _sampleRate.toDouble(),
             22050,
             48000,
@@ -56,48 +56,48 @@ class _SettingsPageState extends State<SettingsPage> {
             valueDisplay: (v) => '${(v / 1000).toStringAsFixed(1)}kHz',
           ),
           _buildSliderTile(
-            'Bit Rate',
-            'Audio encoding quality',
+            '比特率',
+            '音频编码质量',
             _bitRate.toDouble(),
             64,
             256,
             (value) => setState(() => _bitRate = value.round()),
             valueDisplay: (v) => '${v.round()}kbps',
           ),
-          _buildSectionHeader('Storage'),
+          _buildSectionHeader('存储'),
           _buildSwitchTile(
-            'Auto-delete old recordings',
-            'Remove recordings older than $_autoDeleteDays days',
+            '自动删除旧录音',
+            '删除超过 $_autoDeleteDays 天的录音',
             _autoDeleteOld,
             (value) => setState(() => _autoDeleteOld = value),
           ),
           if (_autoDeleteOld)
             _buildSliderTile(
-              'Keep recordings for',
-              'Days before auto-deletion',
+              '保留天数',
+              '自动删除前的保留天数',
               _autoDeleteDays.toDouble(),
               7,
               90,
               (value) => setState(() => _autoDeleteDays = value.round()),
-              valueDisplay: (v) => '${v.round()} days',
+              valueDisplay: (v) => '${v.round()} 天',
             ),
           const SizedBox(height: 8),
           _buildActionTile(
             Icons.backup,
-            'Backup All Recordings',
-            'Export all recordings to device storage',
+            '备份所有录音',
+            '导出录音到设备存储',
             _backupRecordings,
           ),
           _buildActionTile(
             Icons.folder_open,
-            'Open Recordings Folder',
-            'Browse recording files',
+            '打开录音文件夹',
+            '浏览录音文件',
             _openRecordingsFolder,
           ),
-          _buildSectionHeader('About'),
-          _buildInfoTile('Version', '1.0.0'),
-          _buildInfoTile('Database', 'SQLite (Local)'),
-          _buildInfoTile('Storage', 'On-device only'),
+          _buildSectionHeader('关于'),
+          _buildInfoTile('版本', '1.0.0'),
+          _buildInfoTile('数据库', 'SQLite（本地）'),
+          _buildInfoTile('存储', '仅设备本地'),
           const SizedBox(height: 40),
         ],
       ),
@@ -234,7 +234,7 @@ class _SettingsPageState extends State<SettingsPage> {
       if (!await recordingsDir.exists()) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No recordings to backup')),
+            const SnackBar(content: Text('没有可备份的录音')),
           );
         }
         return;
@@ -251,12 +251,12 @@ class _SettingsPageState extends State<SettingsPage> {
       }
 
       if (xFiles.isNotEmpty) {
-        await Share.shareXFiles(xFiles, subject: 'Sleep Talk Backup');
+        await Share.shareXFiles(xFiles, subject: '梦话录音备份');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Backup failed: $e')),
+          SnackBar(content: Text('备份失败: $e')),
         );
       }
     }
@@ -272,12 +272,12 @@ class _SettingsPageState extends State<SettingsPage> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Recordings: ${recordingsDir.path}'),
-            duration: const Duration(seconds: 4),
-          ),
-        );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('录音目录: ${recordingsDir.path}'),
+              duration: const Duration(seconds: 4),
+            ),
+          );
       }
     } catch (_) {}
   }

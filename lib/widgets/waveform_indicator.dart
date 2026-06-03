@@ -15,7 +15,7 @@ class WaveformIndicator extends StatelessWidget {
       return const SizedBox(
         height: 40,
         child: Center(
-          child: Text('No waveform data', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
+          child: Text('无波形数据', style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
         ),
       );
     }

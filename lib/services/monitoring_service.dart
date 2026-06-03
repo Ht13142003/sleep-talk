@@ -235,12 +235,18 @@ class MonitoringService {
   Future<void> _updateWavHeader(File file, int sampleCount) async {
     try {
       final dataSize = sampleCount * 2;
-      final raf = await file.open(mode: FileMode.write);
-      raf.setPositionSync(4);
-      raf.writeFromSync(_int32ToBytes(36 + dataSize));
-      raf.setPositionSync(40);
-      raf.writeFromSync(_int32ToBytes(dataSize));
-      await raf.close();
+      final bytes = await file.readAsBytes();
+      final headerSize = _int32ToBytes(36 + dataSize);
+      bytes[4] = headerSize[0];
+      bytes[5] = headerSize[1];
+      bytes[6] = headerSize[2];
+      bytes[7] = headerSize[3];
+      final dataSizeBytes = _int32ToBytes(dataSize);
+      bytes[40] = dataSizeBytes[0];
+      bytes[41] = dataSizeBytes[1];
+      bytes[42] = dataSizeBytes[2];
+      bytes[43] = dataSizeBytes[3];
+      await file.writeAsBytes(bytes);
     } catch (_) {}
   }
 
