@@ -8,7 +8,11 @@ import 'pages/settings_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeService();
+  try {
+    await initializeService();
+  } catch (e) {
+    debugPrint('Service initialization error: $e');
+  }
   runApp(const SleepTalkApp());
 }
 

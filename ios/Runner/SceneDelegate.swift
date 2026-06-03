@@ -6,7 +6,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = scene as? UIWindowScene else { return }
-        let flutterViewController = FlutterViewController()
+
+        let flutterEngine = FlutterEngine(name: "default")
+        flutterEngine.run()
+        GeneratedPluginRegistrant.register(with: flutterEngine)
+
+        let flutterViewController = FlutterViewController(engine: flutterEngine, nibName: nil, bundle: nil)
         window = UIWindow(windowScene: windowScene)
         window?.rootViewController = flutterViewController
         window?.makeKeyAndVisible()
