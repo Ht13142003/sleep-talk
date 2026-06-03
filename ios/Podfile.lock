@@ -1,0 +1,66 @@
+PODS:
+  - audioplayers_darwin (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+  - flutter_background_service_ios (0.0.1):
+    - Flutter
+  - package_info_plus (0.4.5):
+    - Flutter
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - permission_handler_apple (9.3.0):
+    - Flutter
+  - record_darwin (0.0.1):
+    - Flutter
+  - share_plus (0.0.1):
+    - Flutter
+  - sqflite (0.0.1):
+    - Flutter
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/ios`)
+  - Flutter (from `Flutter`)
+  - flutter_background_service_ios (from `.symlinks/plugins/flutter_background_service_ios/ios`)
+  - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - record_darwin (from `.symlinks/plugins/record_darwin/ios`)
+  - share_plus (from `.symlinks/plugins/share_plus/ios`)
+  - sqflite (from `.symlinks/plugins/sqflite/darwin`)
+
+EXTERNAL SOURCES:
+  audioplayers_darwin:
+    :path: ".symlinks/plugins/audioplayers_darwin/ios"
+  Flutter:
+    :path: Flutter
+  flutter_background_service_ios:
+    :path: ".symlinks/plugins/flutter_background_service_ios/ios"
+  package_info_plus:
+    :path: ".symlinks/plugins/package_info_plus/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+  record_darwin:
+    :path: ".symlinks/plugins/record_darwin/ios"
+  share_plus:
+    :path: ".symlinks/plugins/share_plus/ios"
+  sqflite:
+    :path: ".symlinks/plugins/sqflite/darwin"
+
+SPEC CHECKSUMS:
+  audioplayers_darwin: 0cf8c9292da527d1f2e35ea80d2a94e6d0c0306e
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_background_service_ios: 717cdb44be22d020c22a896c6e42cee22287380d
+  package_info_plus: 115f4ad11e0698c8c1c5d8a4c47e62e9b7dcdae0
+  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  permission_handler_apple: 987858b9b2d0bdc1c8e1f66e5e45b3e6e4e4f9e0
+  record_darwin: 1f91340a454c1b4fd104ad24ab10dd4c37e8e8e9
+  share_plus: c3fef564749587d49725690b4709e412e5a87d39
+  sqflite: 31f7eba61e3074736dff8807a9b41581e4f7f8a2
+
+PODFILE CHECKSUM: 1d2e0e8e0e8e0e8e0e8e0e8e0e8e0e8e8e0e8e0e
+
+COCOAPODS: 1.15.2
