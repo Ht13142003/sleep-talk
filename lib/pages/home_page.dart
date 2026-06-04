@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../services/monitoring_service.dart';
 import '../widgets/status_indicator.dart';
 import '../utils/app_theme.dart';
@@ -53,28 +54,44 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _toggleMonitoring() async {
     if (_isMonitoring) {
-      // 停止监听
       _stopAndroidService();
       await _monitoringService.stopMonitoring();
       setState(() => _isMonitoring = false);
-    } else {
-      // 开始监听
+      return;
+    }
+
+    if (Platform.isAndroid) {
+      if (await Permission.microphone.isDenied) {
+        final mic = await Permission.microphone.request();
+        if (!mic.isGranted) return;
+      }
+    }
+
+    try {
       final success = await _monitoringService.startMonitoring();
       if (success) {
-        _startAndroidService();
+        await _startAndroidService();
         setState(() => _isMonitoring = true);
       }
+    } catch (e) {
+      debugPrint('Start monitoring error: $e');
     }
   }
 
-  void _startAndroidService() {
+  Future<void> _startAndroidService() async {
     if (!Platform.isAndroid) return;
+    if (await Permission.notification.isDenied) {
+      await Permission.notification.request();
+    }
     final service = FlutterBackgroundService();
-    service.startService().then((started) {
+    try {
+      final started = await service.startService();
       if (started) {
         service.invoke('startMonitoring');
       }
-    });
+    } catch (e) {
+      debugPrint('Start service error: $e');
+    }
   }
 
   void _stopAndroidService() {
