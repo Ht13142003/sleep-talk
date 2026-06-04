@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:path_provider/path_provider.dart';
 import 'utils/app_theme.dart';
 import 'pages/home_page.dart';
 import 'pages/recordings_page.dart';
@@ -8,12 +10,24 @@ import 'pages/settings_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Write crash info to file for debugging
+  final crashFile = File('${(await getApplicationDocumentsDirectory()).path}/crash_log.txt');
+
   try {
     await initializeService();
   } catch (e) {
-    debugPrint('Service initialization error: $e');
+    await crashFile.writeAsString('Service init error: $e\n');
+    debugPrint('Service init error: $e');
   }
-  runApp(const SleepTalkApp());
+
+  runZonedGuarded(() {
+    runApp(const SleepTalkApp());
+  }, (error, stack) async {
+    final msg = 'Runtime error: $error\n$stack';
+    await crashFile.writeAsString(msg);
+    debugPrint(msg);
+  });
 }
 
 Future<void> initializeService() async {

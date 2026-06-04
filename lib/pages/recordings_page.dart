@@ -23,7 +23,6 @@ class _RecordingsPageState extends State<RecordingsPage> {
   final Set<int> _selectedIds = {};
   String? _playingFile;
 
-  double _playbackRate = 1.0;
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = Duration.zero;
   String? _nowPlayingFile;
@@ -153,11 +152,6 @@ class _RecordingsPageState extends State<RecordingsPage> {
     await _audioPlayer.seek(position);
   }
 
-  void _changePlaybackRate(double rate) {
-    _playbackRate = rate;
-    _audioPlayer.setPlaybackRate(rate);
-  }
-
   @override
   void dispose() {
     _audioPlayer.dispose();
@@ -281,44 +275,9 @@ class _RecordingsPageState extends State<RecordingsPage> {
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _rateButton(0.5),
-              _rateButton(0.75),
-              _rateButton(1.0),
-              _rateButton(1.5),
-              _rateButton(2.0),
-            ],
-          ),
         ],
       ),
     );
   }
 
-  Widget _rateButton(double rate) {
-    final isSelected = _playbackRate == rate;
-    return GestureDetector(
-      onTap: () => _changePlaybackRate(rate),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.accentBlue.withAlpha(40) : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected ? AppTheme.accentBlue : AppTheme.textSecondary.withAlpha(60),
-          ),
-        ),
-        child: Text(
-          '${rate}x',
-          style: TextStyle(
-            color: isSelected ? AppTheme.accentBlue : AppTheme.textSecondary,
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
-      ),
-    );
-  }
 }

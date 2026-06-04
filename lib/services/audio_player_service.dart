@@ -47,10 +47,6 @@ class AudioPlayerService {
     await _player.seek(position);
   }
 
-  Future<void> setPlaybackRate(double rate) async {
-    await _player.setPlaybackRate(rate);
-  }
-
   Future<Duration?> getDuration() async {
     return await _player.getDuration();
   }
