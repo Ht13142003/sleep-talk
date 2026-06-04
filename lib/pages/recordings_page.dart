@@ -180,10 +180,12 @@ class _RecordingsPageState extends State<RecordingsPage> {
                   _selectedIds.clear();
                 }),
               )
-            : IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context),
-              ),
+            : (Navigator.of(context).canPop()
+                ? IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () => Navigator.pop(context),
+                  )
+                : const SizedBox()),
         actions: [
           if (!_selectionMode && _recordings.isNotEmpty)
             IconButton(

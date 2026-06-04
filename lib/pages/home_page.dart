@@ -3,13 +3,8 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import '../services/monitoring_service.dart';
-import '../services/audio_player_service.dart';
-import '../database/database_helper.dart';
-import '../models/recording_model.dart';
 import '../widgets/status_indicator.dart';
-import '../widgets/recording_tile.dart';
 import '../utils/app_theme.dart';
-import 'recordings_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,22 +15,17 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final MonitoringService _monitoringService = MonitoringService();
-  final DatabaseHelper _dbHelper = DatabaseHelper();
-  final AudioPlayerService _audioPlayer = AudioPlayerService();
 
   bool _isMonitoring = false;
   double _amplitude = 0.0;
   String _statusText = '监听已关闭';
   MonitoringState _currentState = MonitoringState.idle;
-  List<RecordingModel> _recentRecordings = [];
   StreamSubscription<MonitoringState>? _stateSub;
   StreamSubscription<double>? _amplitudeSub;
-  String? _playingFile;
 
   @override
   void initState() {
     super.initState();
-    _loadRecentRecordings();
     _stateSub = _monitoringService.onStateChanged.listen((state) {
       setState(() {
         _currentState = state;
@@ -58,13 +48,6 @@ class _HomePageState extends State<HomePage> {
       case MonitoringState.recording:
         _statusText = '录音中...';
         break;
-    }
-  }
-
-  Future<void> _loadRecentRecordings() async {
-    final recordings = await _dbHelper.getAllRecordings();
-    if (mounted) {
-      setState(() => _recentRecordings = recordings.take(3).toList());
     }
   }
 
@@ -100,21 +83,10 @@ class _HomePageState extends State<HomePage> {
     service.invoke('stopMonitoring');
   }
 
-  Future<void> _playRecording(RecordingModel recording) async {
-    if (_playingFile == recording.filePath) {
-      await _audioPlayer.pause();
-      setState(() => _playingFile = null);
-      return;
-    }
-    await _audioPlayer.play(recording.filePath);
-    setState(() => _playingFile = recording.filePath);
-  }
-
   @override
   void dispose() {
     _stateSub?.cancel();
     _amplitudeSub?.cancel();
-    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -137,8 +109,6 @@ class _HomePageState extends State<HomePage> {
               _buildToggleButton(),
               const SizedBox(height: 40),
               _buildInfoCard(),
-              const SizedBox(height: 32),
-              _buildRecentSection(),
             ],
           ),
         ),
@@ -237,71 +207,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildRecentSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '最近录音',
-                style: TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const RecordingsPage()),
-                  ).then((_) => _loadRecentRecordings());
-                },
-                child: const Text('查看全部'),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        if (_recentRecordings.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: Center(
-              child: Column(
-                children: [
-                  Icon(Icons.nights_stay, size: 48, color: AppTheme.textSecondary.withAlpha(100)),
-                  const SizedBox(height: 12),
-                  const Text(
-                    '暂无录音',
-                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    '开始监听后，梦话录音将显示在这里',
-                    style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-          )
-        else
-          ..._recentRecordings.map((recording) => RecordingTile(
-                recording: recording,
-                isPlaying: _playingFile == recording.filePath,
-                isSelected: false,
-                selectionMode: false,
-                onTap: () {},
-                onPlayPause: () => _playRecording(recording),
-                onDelete: () async {
-                  await _dbHelper.deleteRecording(recording.id!);
-                  _loadRecentRecordings();
-                },
-              )),
-      ],
-    );
-  }
 }
