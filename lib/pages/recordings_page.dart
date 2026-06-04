@@ -9,7 +9,8 @@ import '../widgets/recording_tile.dart';
 import '../utils/app_theme.dart';
 
 class RecordingsPage extends StatefulWidget {
-  const RecordingsPage({super.key});
+  final bool visible;
+  const RecordingsPage({super.key, this.visible = false});
 
   @override
   State<RecordingsPage> createState() => _RecordingsPageState();
@@ -45,6 +46,14 @@ class _RecordingsPageState extends State<RecordingsPage> {
         });
       }
     });
+  }
+
+  @override
+  void didUpdateWidget(RecordingsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.visible && !oldWidget.visible) {
+      _loadRecordings();
+    }
   }
 
   Future<void> _loadRecordings() async {
@@ -176,10 +185,17 @@ class _RecordingsPageState extends State<RecordingsPage> {
                 onPressed: () => Navigator.pop(context),
               ),
         actions: [
+          if (!_selectionMode && _recordings.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.checklist),
+              onPressed: () => setState(() => _selectionMode = true),
+              tooltip: '选择',
+            ),
           if (_selectionMode)
             IconButton(
               icon: const Icon(Icons.delete, color: AppTheme.dangerRed),
               onPressed: _deleteSelected,
+              tooltip: '删除选中',
             ),
         ],
       ),
@@ -216,9 +232,10 @@ class _RecordingsPageState extends State<RecordingsPage> {
                         isPlaying: _playingFile == recording.filePath,
                         isSelected: _selectedIds.contains(recording.id),
                         selectionMode: _selectionMode,
-                        onTap: () => _selectionMode
-                            ? _toggleSelection(recording.id!)
-                            : _enterSelectionMode(recording.id!),
+                        onTap: () => _toggleSelection(recording.id!),
+                        onLongPress: _selectionMode
+                            ? null
+                            : () => _enterSelectionMode(recording.id!),
                         onPlayPause: () => _togglePlayPause(recording),
                         onDelete: () => _deleteRecording(recording),
                       );

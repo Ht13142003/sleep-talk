@@ -9,6 +9,7 @@ class RecordingTile extends StatelessWidget {
   final bool isPlaying;
   final bool isSelected;
   final VoidCallback onTap;
+  final VoidCallback? onLongPress;
   final VoidCallback onPlayPause;
   final VoidCallback onDelete;
   final bool selectionMode;
@@ -19,6 +20,7 @@ class RecordingTile extends StatelessWidget {
     required this.isPlaying,
     required this.isSelected,
     required this.onTap,
+    this.onLongPress,
     required this.onPlayPause,
     required this.onDelete,
     this.selectionMode = false,
@@ -59,8 +61,8 @@ class RecordingTile extends StatelessWidget {
         child: const Icon(Icons.delete, color: Colors.white),
       ),
       child: GestureDetector(
-        onTap: selectionMode ? null : onTap,
-        onLongPress: onTap,
+        onTap: selectionMode ? onTap : onPlayPause,
+        onLongPress: onLongPress,
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           decoration: BoxDecoration(

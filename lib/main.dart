@@ -21,11 +21,17 @@ void main() async {
     debugPrint('Service init error: $e');
   }
 
+  FlutterError.onError = (details) async {
+    final msg = 'Flutter error: ${details.exception}\n${details.stack}';
+    await crashFile.writeAsString('$msg\n');
+    debugPrint(msg);
+  };
+
   runZonedGuarded(() {
     runApp(const SleepTalkApp());
   }, (error, stack) async {
     final msg = 'Runtime error: $error\n$stack';
-    await crashFile.writeAsString(msg);
+    await crashFile.writeAsString('$msg\n');
     debugPrint(msg);
   });
 }
@@ -36,6 +42,7 @@ Future<void> initializeService() async {
   final androidConfig = AndroidConfiguration(
     onStart: onStart,
     autoStart: false,
+    autoStartOnBoot: false,
     isForegroundMode: true,
     notificationChannelId: 'sleep_talk_channel',
     initialNotificationTitle: '梦话记录仪',
@@ -134,18 +141,16 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = const [
-    HomePage(),
-    RecordingsPage(),
-    SettingsPage(),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _pages,
+        children: [
+          const HomePage(),
+          RecordingsPage(visible: _currentIndex == 1),
+          const SettingsPage(),
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
