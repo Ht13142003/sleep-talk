@@ -80,8 +80,10 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _startAndroidService() async {
     if (!Platform.isAndroid) return;
-    if (await Permission.notification.isDenied) {
-      await Permission.notification.request();
+    final notifStatus = await Permission.notification.request();
+    if (!notifStatus.isGranted) {
+      debugPrint('Notification permission denied — cannot start foreground service');
+      return;
     }
     final service = FlutterBackgroundService();
     try {
