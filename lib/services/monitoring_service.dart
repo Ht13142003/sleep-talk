@@ -49,6 +49,13 @@ class MonitoringService {
     final granted = await _audioRecorder.hasPermission();
     if (!granted) return false;
 
+    // 确保录音机未在录制中
+    try {
+      if (await _audioRecorder.isRecording()) {
+        await _audioRecorder.stop();
+      }
+    } catch (_) {}
+
     // 预创建录音目录（使用应用私有目录，避免Android根目录权限问题）
     try {
       final appDir = await getApplicationDocumentsDirectory();
@@ -202,15 +209,12 @@ class MonitoringService {
       _waveFileSink = null;
     }
     _finalizing = false;
+    _currentOutputFile = null;
+    _segmentStartTime = null;
+    _segmentSampleCount = 0;
 
     _state = MonitoringState.idle;
     _stateController.add(_state);
-
-    Timer(const Duration(seconds: 3), () {
-      if (_state == MonitoringState.idle) {
-        startMonitoring();
-      }
-    });
   }
 
   Future<void> dispose() async {

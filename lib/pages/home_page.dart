@@ -60,8 +60,13 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    if (!await _requestPermissions()) {
-      return;
+    try {
+      if (!await _requestPermissions()) {
+        return;
+      }
+    } catch (e) {
+      debugPrint('Permission request error: $e');
+      // 权限请求失败时仍然尝试继续（可能部分权限已授予）
     }
 
     try {
@@ -84,10 +89,14 @@ class _HomePageState extends State<HomePage> {
       return false;
     }
 
-    final notifStatus = await Permission.notification.request();
-    if (!notifStatus.isGranted) {
-      debugPrint('Notification permission denied');
-      return false;
+    // 通知权限不是必需的，失败不阻止监听启动
+    try {
+      final notifStatus = await Permission.notification.request();
+      if (!notifStatus.isGranted) {
+        debugPrint('Notification permission denied (non-blocking)');
+      }
+    } catch (e) {
+      debugPrint('Notification permission error (non-blocking): $e');
     }
 
     return true;
