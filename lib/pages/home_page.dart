@@ -60,11 +60,8 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    if (Platform.isAndroid) {
-      if (await Permission.microphone.isDenied) {
-        final mic = await Permission.microphone.request();
-        if (!mic.isGranted) return;
-      }
+    if (!await _requestPermissions()) {
+      return;
     }
 
     try {
@@ -78,13 +75,26 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _startAndroidService() async {
-    if (!Platform.isAndroid) return;
+  Future<bool> _requestPermissions() async {
+    if (!Platform.isAndroid) return true;
+
+    final micStatus = await Permission.microphone.request();
+    if (!micStatus.isGranted) {
+      debugPrint('Microphone permission denied');
+      return false;
+    }
+
     final notifStatus = await Permission.notification.request();
     if (!notifStatus.isGranted) {
-      debugPrint('Notification permission denied — cannot start foreground service');
-      return;
+      debugPrint('Notification permission denied');
+      return false;
     }
+
+    return true;
+  }
+
+  Future<void> _startAndroidService() async {
+    if (!Platform.isAndroid) return;
     final service = FlutterBackgroundService();
     try {
       final started = await service.startService();
