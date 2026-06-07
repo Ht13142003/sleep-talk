@@ -11,20 +11,19 @@ import 'pages/settings_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Write crash info to file for debugging（使用应用私有目录，避免权限问题）
-  final appDocsDir = await getApplicationDocumentsDirectory();
-  final crashFile = File('${appDocsDir.path}/crash_log.txt');
+  // Write crash info to file for debugging
+  final crashFile = File('${(await getApplicationDocumentsDirectory()).path}/crash_log.txt');
 
   try {
     await initializeService();
   } catch (e) {
-    await crashFile.writeAsString('Service init error: $e\n', mode: FileMode.append);
+    await crashFile.writeAsString('Service init error: $e\n');
     debugPrint('Service init error: $e');
   }
 
   FlutterError.onError = (details) async {
-    final msg = 'Flutter error: ${details.exception}\n${details.stack}\n';
-    await crashFile.writeAsString('$msg\n', mode: FileMode.append);
+    final msg = 'Flutter error: ${details.exception}\n${details.stack}';
+    await crashFile.writeAsString('$msg\n');
     debugPrint(msg);
   };
 
@@ -32,7 +31,7 @@ void main() async {
     runApp(const SleepTalkApp());
   }, (error, stack) async {
     final msg = 'Runtime error: $error\n$stack';
-    await crashFile.writeAsString('$msg\n', mode: FileMode.append);
+    await crashFile.writeAsString('$msg\n');
     debugPrint(msg);
   });
 }
