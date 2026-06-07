@@ -66,18 +66,35 @@ class _HomePageState extends State<HomePage> {
       }
     } catch (e) {
       debugPrint('Permission request error: $e');
-      // 权限请求失败时仍然尝试继续（可能部分权限已授予）
+      _showError('权限请求失败: $e');
     }
 
     try {
+      debugPrint('=== 启动后台服务 ===');
+      await _startAndroidService();
+      debugPrint('=== 启动音频流 ===');
       final success = await _monitoringService.startMonitoring();
       if (success) {
-        await _startAndroidService();
         setState(() => _isMonitoring = true);
+      } else {
+        debugPrint('startMonitoring 返回 false');
+        _showError('启动监听失败，请检查麦克风权限');
       }
     } catch (e) {
       debugPrint('Start monitoring error: $e');
+      _showError('启动失败: $e');
     }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   Future<bool> _requestPermissions() async {

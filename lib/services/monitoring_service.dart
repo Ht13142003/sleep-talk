@@ -46,15 +46,25 @@ class MonitoringService {
   Future<bool> startMonitoring() async {
     if (_state != MonitoringState.idle) return true;
 
-    final granted = await _audioRecorder.hasPermission();
-    if (!granted) return false;
+    try {
+      final granted = await _audioRecorder.hasPermission();
+      if (!granted) {
+        debugPrint('hasPermission 返回 false');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('hasPermission 异常: $e');
+      return false;
+    }
 
     // 确保录音机未在录制中
     try {
       if (await _audioRecorder.isRecording()) {
         await _audioRecorder.stop();
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('isRecording/stop 异常: $e');
+    }
 
     // 预创建录音目录（使用应用私有目录，避免Android根目录权限问题）
     try {
@@ -215,6 +225,13 @@ class MonitoringService {
 
     _state = MonitoringState.idle;
     _stateController.add(_state);
+
+    // 音频流错误时自动重试一次
+    Timer(const Duration(seconds: 3), () {
+      if (_state == MonitoringState.idle) {
+        startMonitoring();
+      }
+    });
   }
 
   Future<void> dispose() async {
