@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'vad_service.dart';
+import 'native_audio_recorder.dart';
 import '../database/database_helper.dart';
 import '../models/recording_model.dart';
 
@@ -18,6 +19,7 @@ class MonitoringService {
   final VadService _vadService = VadService();
   final DatabaseHelper _dbHelper = DatabaseHelper();
   final AudioRecorder _audioRecorder = AudioRecorder();
+  final NativeAudioRecorder _nativeRecorder = NativeAudioRecorder();
 
   MonitoringState _state = MonitoringState.idle;
   StreamSubscription<Uint8List>? _audioStreamSubscription;
@@ -59,8 +61,8 @@ class MonitoringService {
 
     // 确保录音机未在录制中
     try {
-      if (await _audioRecorder.isRecording()) {
-        await _audioRecorder.stop();
+      if (await _nativeRecorder.isRecording()) {
+        await _nativeRecorder.stop();
       }
     } catch (e) {
       debugPrint('isRecording/stop 异常: $e');
@@ -90,15 +92,14 @@ class MonitoringService {
 
   Future<void> _startAudioStream() async {
     try {
-      final stream = await _audioRecorder.startStream(
-        const RecordConfig(
-          encoder: AudioEncoder.pcm16bits,
-          sampleRate: _sampleRate,
-          numChannels: 1,
-        ),
-      );
+      final started = await _nativeRecorder.start(sampleRate: _sampleRate);
+      if (!started) {
+        debugPrint('原生录音启动失败');
+        _handleStreamError();
+        return;
+      }
 
-      _audioStreamSubscription = stream.listen(
+      _audioStreamSubscription = _nativeRecorder.audioStream.listen(
         _processAudioFrame,
         onError: (_) => _handleStreamError(),
       );
@@ -202,9 +203,9 @@ class MonitoringService {
     _audioStreamSubscription = null;
 
     try {
-      await _audioRecorder.stop();
+      await _nativeRecorder.stop();
     } catch (e) {
-      debugPrint('停止录音机错误: $e');
+      debugPrint('停止原生录音错误: $e');
     }
 
     _state = MonitoringState.idle;
@@ -226,12 +227,8 @@ class MonitoringService {
     _state = MonitoringState.idle;
     _stateController.add(_state);
 
-    // 音频流错误时自动重试一次
-    Timer(const Duration(seconds: 3), () {
-      if (_state == MonitoringState.idle) {
-        startMonitoring();
-      }
-    });
+    // 确保原生录音已停止
+    _nativeRecorder.stop();
   }
 
   Future<void> dispose() async {

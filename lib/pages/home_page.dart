@@ -70,9 +70,9 @@ class _HomePageState extends State<HomePage> {
     }
 
     try {
-      debugPrint('=== 启动后台服务 ===');
-      await _startAndroidService();
-      debugPrint('=== 启动音频流 ===');
+      // 跳过后台服务，先只测试音频流
+      // await _startAndroidService();
+      debugPrint('=== 仅启动音频流（跳过后台服务） ===');
       final success = await _monitoringService.startMonitoring();
       if (success) {
         setState(() => _isMonitoring = true);
