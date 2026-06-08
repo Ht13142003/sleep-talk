@@ -70,9 +70,6 @@ class _HomePageState extends State<HomePage> {
     }
 
     try {
-      // 跳过后台服务，先只测试音频流
-      // await _startAndroidService();
-      debugPrint('=== 仅启动音频流（跳过后台服务） ===');
       final success = await _monitoringService.startMonitoring();
       if (success) {
         setState(() => _isMonitoring = true);
@@ -117,19 +114,6 @@ class _HomePageState extends State<HomePage> {
     }
 
     return true;
-  }
-
-  Future<void> _startAndroidService() async {
-    if (!Platform.isAndroid) return;
-    final service = FlutterBackgroundService();
-    try {
-      final started = await service.startService();
-      if (started) {
-        service.invoke('startMonitoring');
-      }
-    } catch (e) {
-      debugPrint('Start service error: $e');
-    }
   }
 
   void _stopAndroidService() {
